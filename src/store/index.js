@@ -138,19 +138,38 @@ export default new Vuex.Store({
         throw e;
       }
     },
-    async queryDocuments(
-      { commit, dispatch },
-      {
-        contractId,
-        // typeLocator,
-        queryOpts,
-      }
-    ) {
+    async queryDocuments({ commit, dispatch }, { contractId, typeLocator, queryOpts }) {
       console.log(queryOpts);
       commit("setSyncing", true);
       try {
-        await client.isReady();
-        const documents = await client.platform.documents.get("dpns.domain", queryOpts); // TODO change dpns domain to contract id
+        console.log({ contractId });
+        console.log(`somedapp.${typeLocator}`);
+        const clientQ = new DashJS.Client({
+          network: "testnet",
+          seeds: [
+            {
+              service: "54.184.198.68:20001",
+              port: 3000,
+            },
+          ],
+          mnemonic: undefined,
+          apps: {
+            dpns: {
+              contractId: "ForwNrvKy8jdyoCNTYBK4gcV6o15n79DmFQio2gGac5p",
+            },
+            somedapp: { contractId },
+          },
+        });
+        // await client.disconnect();
+        // console.log("client disconnected");
+        await clientQ.isReady();
+        console.log("clientq is ready");
+        console.log(`somedapp.${typeLocator}`);
+        const documents = await clientQ.platform.documents.get(
+          `somedapp.${typeLocator}`,
+          queryOpts
+        ); // TODO change dpns domain to contract id
+        console.log({ documents });
         commit("setDocuments", { contractId, documents });
         commit("setSyncing", false);
       } catch (e) {
@@ -219,6 +238,12 @@ export default new Vuex.Store({
       console.log(json);
 
       const sdkAppsOpts = {
+        seeds: [
+          {
+            service: "54.184.198.68:20001",
+            port: 3000,
+          },
+        ],
         network: "testnet",
         mnemonic: this.state.wallet.mnemonic,
         apps: {
@@ -272,10 +297,16 @@ export default new Vuex.Store({
         console.log("mnemonic is", mnemonic);
         client = new DashJS.Client({
           network: "testnet",
+          seeds: [
+            {
+              service: "54.184.198.68:20001",
+              port: 3000,
+            },
+          ],
           mnemonic,
           apps: {
             dpns: {
-              contractId: "77w8Xqn25HwJhjodrHW133aXhjuTsTv9ozQaYpSHACE3",
+              contractId: "ForwNrvKy8jdyoCNTYBK4gcV6o15n79DmFQio2gGac5p",
             },
           },
         });
